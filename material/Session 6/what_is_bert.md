@@ -38,7 +38,6 @@ Key components:
 1. **Token embeddings**
 
    * Converts words/subwords into vectors.
-
 2. **Transformer encoder layers**
 
    * Multiple stacked layers (12 or 24 typically).
@@ -46,7 +45,6 @@ Key components:
 
      * **Self-attention**
      * **Feed-forward neural networks**
-
 3. **Self-attention mechanism**
 
    * Allows each word to attend to every other word in the sentence.
@@ -133,7 +131,6 @@ It influenced later models like:
 * DistilBERT
 
 ---
-
 
 BERT is a **Transformer-based language model that understands text bidirectionally and can be fine-tuned for many NLP tasks.**
 
