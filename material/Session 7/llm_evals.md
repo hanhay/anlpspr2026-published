@@ -17,6 +17,7 @@ Evaluating LLMs is fundamentally different from evaluating traditional software 
 
 **Sensitivity to prompt wording.** As covered in the prompting section, small changes in how a question is phrased can produce very different outputs, making evaluation results prompt-specific rather than model-specific.
 
+
 **Rapid capability growth.** Models improve fast. Benchmarks that were hard in 2022 are saturated by 2024. Evaluation frameworks must evolve alongside the models they measure.
 
 **Goodhart's Law.** Once a benchmark becomes a target, it ceases to be a good measure. Models trained or fine-tuned to maximise benchmark scores may not generalise — a phenomenon called *benchmark contamination* or *overfitting to leaderboards*.
@@ -27,13 +28,13 @@ Evaluating LLMs is fundamentally different from evaluating traditional software 
 
 ### 2.1 Automatic vs Human Evaluation
 
-| | Automatic | Human |
-|---|---|---|
-| **Speed** | Fast, scalable | Slow, expensive |
-| **Consistency** | Deterministic | Variable (inter-annotator disagreement) |
-| **Coverage** | Limited to what metrics can capture | Can assess nuance, tone, coherence |
-| **Bias** | Metric-specific biases | Human biases and fatigue |
-| **Use case** | Regression testing, large-scale benchmarking | Final model selection, safety evaluation |
+|                       | Automatic                                    | Human                                    |
+| --------------------- | -------------------------------------------- | ---------------------------------------- |
+| **Speed**       | Fast, scalable                               | Slow, expensive                          |
+| **Consistency** | Deterministic                                | Variable (inter-annotator disagreement)  |
+| **Coverage**    | Limited to what metrics can capture          | Can assess nuance, tone, coherence       |
+| **Bias**        | Metric-specific biases                       | Human biases and fatigue                 |
+| **Use case**    | Regression testing, large-scale benchmarking | Final model selection, safety evaluation |
 
 In practice, both are used together. Automatic metrics provide fast feedback during development; human evaluation validates results before deployment.
 
@@ -59,11 +60,15 @@ These metrics predate LLMs but remain widely used, especially for translation an
 
 Perplexity measures how well a language model predicts a test corpus. Lower perplexity = the model finds the text more probable = better fit.
 
-$$\text{Perplexity}(W) = P(w_1, w_2, \ldots, w_N)^{-1/N}$$
+$$
+\text{Perplexity}(W) = P(w_1, w_2, \ldots, w_N)^{-1/N}
+$$
 
 Equivalently, it is the exponentiated average negative log-likelihood per token:
 
-$$\text{Perplexity} = \exp\left(-\frac{1}{N} \sum_{i=1}^{N} \log P(w_i \mid w_1, \ldots, w_{i-1})\right)$$
+$$
+\text{Perplexity} = \exp\left(-\frac{1}{N} \sum_{i=1}^{N} \log P(w_i \mid w_1, \ldots, w_{i-1})\right)
+$$
 
 - **Interpretation**: if perplexity = 10, the model is as uncertain as if it had to choose uniformly among 10 equally likely words at every step.
 - **Limitation**: perplexity measures fluency and language fit — not factual accuracy, helpfulness, or instruction-following.
@@ -73,14 +78,18 @@ $$\text{Perplexity} = \exp\left(-\frac{1}{N} \sum_{i=1}^{N} \log P(w_i \mid w_1,
 
 BLEU measures the overlap of n-grams between a model's output and one or more reference translations. Originally designed for machine translation (Papineni et al., 2002).
 
-$$\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)$$
+$$
+\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)
+$$
 
 Where:
+
 - $p_n$ = modified n-gram precision (fraction of model n-grams found in any reference)
 - $w_n$ = weight for each n-gram order (typically uniform: $w_n = 1/N$)
 - BP = brevity penalty (penalises outputs that are too short)
 
 **Limitations:**
+
 - Only measures surface-level overlap — synonyms are penalised even if semantically correct
 - Correlates poorly with human judgement for open-ended generation tasks
 - Not suitable for evaluating conversational or instruction-following outputs
@@ -92,10 +101,13 @@ Where:
 ROUGE measures recall-oriented n-gram overlap between generated summaries and reference summaries (Lin, 2004).
 
 Key variants:
+
 - **ROUGE-N**: n-gram overlap (ROUGE-1 = unigrams, ROUGE-2 = bigrams)
 - **ROUGE-L**: longest common subsequence — captures sentence-level structure
 
-$$\text{ROUGE-N} = \frac{\sum_{\text{ref}} \sum_{n\text{-gram} \in \text{ref}} \text{Count}_\text{match}(n\text{-gram})}{\sum_{\text{ref}} \sum_{n\text{-gram} \in \text{ref}} \text{Count}(n\text{-gram})}$$
+$$
+\text{ROUGE-N} = \frac{\sum_{\text{ref}} \sum_{n\text{-gram} \in \text{ref}} \text{Count}_\text{match}(n\text{-gram})}{\sum_{\text{ref}} \sum_{n\text{-gram} \in \text{ref}} \text{Count}(n\text{-gram})}
+$$
 
 **Use**: summarisation benchmarks (CNN/DailyMail, XSum).
 **Limitation**: same surface-overlap issues as BLEU; does not capture meaning.
@@ -104,7 +116,9 @@ $$\text{ROUGE-N} = \frac{\sum_{\text{ref}} \sum_{n\text{-gram} \in \text{ref}} \
 
 BERTScore uses contextual embeddings from a pre-trained BERT model to compute token-level similarity between candidate and reference, capturing semantic meaning rather than surface overlap (Zhang et al., 2020).
 
-$$\text{BERTScore F1} = \frac{2 \cdot P_\text{BERT} \cdot R_\text{BERT}}{P_\text{BERT} + R_\text{BERT}}$$
+$$
+\text{BERTScore F1} = \frac{2 \cdot P_\text{BERT} \cdot R_\text{BERT}}{P_\text{BERT} + R_\text{BERT}}
+$$
 
 Where precision and recall are computed by matching each token in the candidate/reference to its most similar token in the other text using cosine similarity of contextual embeddings.
 
@@ -189,46 +203,54 @@ Below is the core vocabulary. These benchmarks appear repeatedly across lab anno
 ### Knowledge and Reasoning
 
 **MMLU (Massive Multitask Language Understanding)**
+
 - 57-subject multiple choice exam: STEM, law, medicine, history, ethics, and more
 - Tests breadth of world knowledge at undergraduate-to-professional level
 - The most widely reported benchmark — appears in virtually every major model release
 - Limitation: heavily saturated by 2024-2025; top models score 85-90%+, making differentiation hard
 
 **GPQA Diamond**
+
 - Graduate-level science questions (biology, chemistry, physics) written by PhD experts
 - "Google-proof" — questions designed so that searching the web won't reliably give you the answer
 - Harder than MMLU; scores remain meaningful at the frontier — humans with PhDs score ~65%, top models ~75-85%
 - Anthropic and OpenAI both report this in recent Claude and GPT-4o/o-series releases
 
 **Humanity's Last Exam (HLE)**
+
 - A 2024-2025 benchmark of ~3,000 extremely difficult questions contributed by domain experts worldwide
 - Designed to be unsolvable by current models at launch — intended to stay challenging as capabilities grow
 - Scores are low even for frontier models (single digits to low tens of percent at time of release)
 - Increasingly appearing in model announcements as MMLU becomes too easy
 
 **ARC-Challenge (AI2 Reasoning Challenge)**
+
 - Grade-school science questions requiring genuine reasoning, not just recall
 - Filtered to include only questions that retrieval and word-frequency models fail on
 - Commonly reported alongside MMLU as a knowledge + reasoning double-check
 
 **WinoGrande**
+
 - Large-scale commonsense reasoning via pronoun disambiguation (Winograd schema format)
 - Tests whether models understand real-world context, not just language patterns
 
 ### Mathematics
 
 **MATH**
+
 - 12,500 competition-level problems across 7 difficulty levels (AMC/AIME/Olympiad style)
 - Tests multi-step mathematical reasoning and symbolic manipulation
 - Commonly reported for both base and reasoning models
 
 **AIME (American Invitational Mathematics Examination)**
+
 - Real competition problems from the AIME exam (high-school maths olympiad)
 - Increasingly used for reasoning models (o1, o3, DeepSeek R1) where MATH has become saturated
 - AIME 2024 and AIME 2025 are used as living benchmarks — harder to contaminate since problems are newly released each year
 - OpenAI reports AIME scores for o-series reasoning models
 
 **GSM8K (Grade School Math)**
+
 - Multi-step arithmetic word problems at grade school level
 - Widely reported but increasingly saturated — most frontier models score 95%+
 - Still used as a baseline check for smaller/cheaper models
@@ -236,17 +258,20 @@ Below is the core vocabulary. These benchmarks appear repeatedly across lab anno
 ### Coding
 
 **HumanEval**
+
 - 164 Python programming problems with unit tests; metric is pass@1 (does the first attempt pass all tests?)
 - The standard baseline for coding capability — reported by all three labs
 - Limitation: relatively easy for frontier models; scores above 90% are common
 
 **SWE-bench Verified**
+
 - Real GitHub issues from popular Python repositories; model must write a patch that passes the repo's existing test suite
 - Much harder and more realistic than HumanEval — tests end-to-end software engineering ability
 - Scores remained below 50% for most models into 2024; Claude 3.7 Sonnet and similar models pushed this significantly
 - Increasingly the benchmark of choice for agentic coding evaluation
 
 **LiveCodeBench**
+
 - Competitive programming problems collected continuously from Codeforces, LeetCode, and AtCoder after a cutoff date
 - Designed to reduce contamination: problems post-date training data
 - Used by labs to demonstrate reasoning and coding on genuinely unseen problems
@@ -254,12 +279,14 @@ Below is the core vocabulary. These benchmarks appear repeatedly across lab anno
 ### Long Context and Instruction Following
 
 **NIAH (Needle in a Haystack)**
+
 - Buries a specific fact ("the needle") inside a very long document and asks the model to retrieve it
 - Tests whether models can attend to information anywhere in their context window, not just the beginning and end
 - Anthropic reported near-perfect recall (>99%) for Claude 3 Opus on this test
 - Increasingly standard as models compete on 128K–1M token context windows
 
 **IFEval (Instruction Following Evaluation)**
+
 - Tests whether models follow explicit formatting and structural instructions (e.g. "respond in exactly 3 bullet points", "use the word 'banana' exactly once")
 - Measures instruction adherence, not just answer quality
 - Appearing in newer model cards as instruction-following becomes a key product differentiator
@@ -267,11 +294,13 @@ Below is the core vocabulary. These benchmarks appear repeatedly across lab anno
 ### Multimodal (Vision + Language)
 
 **MMMU (Massive Multidisciplinary Multimodal Understanding)**
+
 - Like MMLU but with images — questions require understanding charts, diagrams, scientific figures
 - Standard for vision-language model evaluation
 - Reported by Google (Gemini) and OpenAI (GPT-4o) for multimodal benchmarks
 
 **DocVQA / ChartQA**
+
 - Document and chart visual question answering — tests ability to read and reason over structured visual information
 - Practical relevance: real-world documents, PDFs, spreadsheets
 
@@ -279,12 +308,12 @@ Below is the core vocabulary. These benchmarks appear repeatedly across lab anno
 
 Some labs — particularly OpenAI's GPT-4 technical report — reported performance on real-world professional exams:
 
-| Exam | Domain | Why reported |
-|---|---|---|
-| Bar Exam | Law | Professional licensing standard |
-| USMLE (Medical Licensing) | Medicine | High-stakes domain benchmark |
-| SAT / GRE | Academic reasoning | General population reference point |
-| AP Exams | Subject knowledge | Curriculum-aligned knowledge test |
+| Exam                      | Domain             | Why reported                       |
+| ------------------------- | ------------------ | ---------------------------------- |
+| Bar Exam                  | Law                | Professional licensing standard    |
+| USMLE (Medical Licensing) | Medicine           | High-stakes domain benchmark       |
+| SAT / GRE                 | Academic reasoning | General population reference point |
+| AP Exams                  | Subject knowledge  | Curriculum-aligned knowledge test  |
 
 These are not used for ongoing model comparisons (too coarse), but were powerful communication tools when GPT-4 first demonstrated professional-level performance.
 
@@ -293,13 +322,9 @@ These are not used for ongoing model comparisons (too coarse), but were powerful
 When you see a model announcement, read the benchmark table with these questions in mind:
 
 1. **Is the benchmark saturated?** If all frontier models score 90%+ on a benchmark, a 1-2% difference is noise, not signal. Look for benchmarks where there is still spread.
-
 2. **Is this a reasoning model being tested on reasoning benchmarks only?** Reasoning models (o1, o3, DeepSeek R1) are specifically optimised for AIME and MATH — comparing them on these benchmarks against non-reasoning models is not apples-to-apples.
-
 3. **Is the evaluation few-shot or zero-shot?** The number of examples provided in the prompt significantly affects scores. Labs sometimes choose the setup that favours their model.
-
 4. **What is *not* reported?** Labs choose which benchmarks to publish. A model card that omits TruthfulQA or bias benchmarks may be avoiding unflattering results.
-
 5. **Does strong benchmark performance predict strong performance on your task?** Usually not directly — which is exactly why Section 8 (building your own eval) matters.
 
 ---
@@ -336,6 +361,7 @@ Artificial Analysis (https://artificialanalysis.ai) is an independent platform t
 **What makes it different from academic benchmarks:** it does not just measure *intelligence* — it measures the full cost-quality-speed trade-off that practitioners actually face when choosing a model for a production application.
 
 Evaluation dimensions:
+
 - **Intelligence Index**: an aggregated score across 10 evaluations covering reasoning, knowledge, maths, and coding (including their own AA-Omniscience benchmark for knowledge reliability and hallucination)
 - **Speed**: output tokens per second — critical for user-facing applications
 - **Latency / TTFT**: time to first token — determines perceived responsiveness
@@ -362,6 +388,7 @@ METR (https://metr.org) is a research nonprofit that evaluates frontier AI model
 - **Time Horizon metric**: quantifies the length (in time) of software tasks AI agents can independently complete. This metric has doubled roughly every 7 months over the past 6 years — a finding with significant implications for understanding AI capability growth
 
 **Key findings relevant to this course:**
+
 - Models show increasingly clear examples of *reward hacking* — exploiting scoring bugs rather than solving problems as intended (observed in GPT-5, o3). This is a real-world instance of Goodhart's Law in action.
 - METR found that AI coding tools made *experienced developers 19% slower* on real-world tasks despite strong benchmark performance — a stark illustration of the gap between benchmark scores and production utility.
 - METR evaluates models on behalf of AI labs before public release (pre-deployment safety evaluations), making their work part of the governance infrastructure around frontier models.
@@ -433,13 +460,13 @@ The core model: an eval = **data source config** (what you're testing on) + **te
 
 **Grader types** — the building blocks of OpenAI's evaluation system:
 
-| Grader | What it does | When to use |
-|---|---|---|
-| `string_check` | Exact or partial string match (`eq`, `ne`, `like`, `ilike`) | Classification tasks with fixed output labels |
-| `text_similarity` | Scores overlap using BLEU, cosine, fuzzy match, etc. | Summarisation, open-ended generation with a reference |
-| `label_model` | Another LLM classifies the output from a set of labels | Sentiment, intent, category — where output is open text |
-| `score_model` | Another LLM assigns a numeric score to the output | Quality, helpfulness, coherence scoring |
-| `python` | Custom Python `grade(sample, item) -> float` function | Any custom logic that doesn't fit the above |
+| Grader              | What it does                                                        | When to use                                              |
+| ------------------- | ------------------------------------------------------------------- | -------------------------------------------------------- |
+| `string_check`    | Exact or partial string match (`eq`, `ne`, `like`, `ilike`) | Classification tasks with fixed output labels            |
+| `text_similarity` | Scores overlap using BLEU, cosine, fuzzy match, etc.                | Summarisation, open-ended generation with a reference    |
+| `label_model`     | Another LLM classifies the output from a set of labels              | Sentiment, intent, category — where output is open text |
+| `score_model`     | Another LLM assigns a numeric score to the output                   | Quality, helpfulness, coherence scoring                  |
+| `python`          | Custom Python`grade(sample, item) -> float` function              | Any custom logic that doesn't fit the above              |
 
 The simplest grader is `string_check` — it directly mirrors the `exact_match` function in the custom eval loop in Section 8, but configured declaratively:
 
@@ -564,15 +591,15 @@ For real projects (like AT2), you often need evaluation tailored to your specifi
 
 Before writing any code, decide what you are measuring. Common dimensions:
 
-| Dimension | Description | Example metric |
-|---|---|---|
-| Correctness | Is the answer factually right? | Exact match, F1 |
-| Fluency | Is the output well-written? | Perplexity, human rating |
-| Faithfulness | Is the output grounded in the provided context? | NLI-based, LLM judge |
-| Relevance | Does the output address the question? | Cosine sim, LLM judge |
-| Safety | Does the output avoid harmful content? | Classifier, red-team |
-| Latency | How fast is the response? | Wall-clock time |
-| Cost | How many tokens does it consume? | Token count × price |
+| Dimension    | Description                                     | Example metric           |
+| ------------ | ----------------------------------------------- | ------------------------ |
+| Correctness  | Is the answer factually right?                  | Exact match, F1          |
+| Fluency      | Is the output well-written?                     | Perplexity, human rating |
+| Faithfulness | Is the output grounded in the provided context? | NLI-based, LLM judge     |
+| Relevance    | Does the output address the question?           | Cosine sim, LLM judge    |
+| Safety       | Does the output avoid harmful content?          | Classifier, red-team     |
+| Latency      | How fast is the response?                       | Wall-clock time          |
+| Cost         | How many tokens does it consume?                | Token count × price     |
 
 ### 8.2 Build a Simple Eval Loop
 
@@ -669,6 +696,7 @@ rubric = """
 ### 8.4 Version and Track Your Evals
 
 Treat evaluation like software:
+
 - Version control your test cases alongside your prompts
 - Track results over time — a table of `(date, model, prompt_version, score)` is invaluable
 - Regression test: when you update a prompt, re-run all test cases to catch regressions
@@ -681,6 +709,7 @@ Treat evaluation like software:
 **Start with human evaluation on a small set.** Before writing any automated eval, manually review 20-30 model outputs. This builds intuition about what "good" looks like for your task — intuition you need to write useful automatic metrics.
 
 **Pick metrics that match your task:**
+
 - Translation / summarisation → ROUGE, BERTScore
 - Code generation → pass@k with unit tests
 - Open-ended QA → LLM-as-judge
